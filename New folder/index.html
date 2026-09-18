@@ -985,6 +985,11 @@
     saveLocalProgress();
     syncProgress();
   }
+  window.loadStudyProgress = loadProgress;
+  window.getStudyProgress = function() {
+    if (progressData.userId === window.studyUser) return { answers: progressData.answers || {} };
+    return window.studyUser ? readLocalProgress(window.studyUser) : { answers: {} };
+  };
   window.recordStudyAnswer = function(type, question, correct, category, choices) {
     if (!window.studyUser) return;
     if (progressData.userId !== window.studyUser) {
@@ -1522,7 +1527,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
         if (result.error) throw result.error;
       }
       window.studyUser = result.data.user.id;
-      await loadProgress(result.data.user);
+      await window.loadStudyProgress(result.data.user);
       document.getElementById("hubUserName").textContent = result.data.user.email;
       document.getElementById("passwordInput").value = "";
       showScreen("landing");
@@ -1537,7 +1542,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     supabaseClient.auth.onAuthStateChange(function(_event, session) {
       if (session && session.user) {
         window.studyUser = session.user.id;
-        loadProgress(session.user);
+        window.loadStudyProgress(session.user);
         document.getElementById("hubUserName").textContent = session.user.email;
         if (screens.auth && !screens.auth.classList.contains("hidden")) showScreen("landing");
       } else {
@@ -1548,8 +1553,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   }
 
   function getProgress() {
-    if (progressData.userId === window.studyUser) return { answers: progressData.answers || {} };
-    return window.studyUser ? readLocalProgress(window.studyUser) : { answers: {} };
+    return window.getStudyProgress ? window.getStudyProgress() : { answers: {} };
   }
   function renderProgress() {
     var answers = Object.keys(getProgress().answers || {}).map(function(key) { return getProgress().answers[key]; });
