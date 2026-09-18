@@ -970,16 +970,46 @@
     try { localStorage.setItem(progressKey(progressData.userId), JSON.stringify({ answers: progressData.answers })); }
     catch (e) { /* storage unavailable, keep the quiz usable */ }
   }
+  async function readRemoteProgress(user) {
+    if (!window.studySupabaseClient || !user || !user.id) {
+      return user && user.user_metadata && user.user_metadata.study_progress || { answers: {} };
+    }
+    try {
+      var result = await window.studySupabaseClient
+        .from('study_progress')
+        .select('answers')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (!result.error && result.data && result.data.answers) {
+        return result.data.answers && typeof result.data.answers === 'object' ? { answers: result.data.answers } : { answers: {} };
+      }
+    } catch (e) {
+      // Fall back to auth metadata below.
+    }
+    return (user.user_metadata && user.user_metadata.study_progress) || { answers: {} };
+  }
   function syncProgress() {
     if (!window.studySupabaseClient || !progressData.userId) return;
     var snapshot = JSON.parse(JSON.stringify({ answers: progressData.answers }));
-    progressSync = progressSync.then(function() {
-      return window.studySupabaseClient.auth.updateUser({ data: { study_progress: snapshot } });
+    progressSync = progressSync.then(async function() {
+      try {
+        await window.studySupabaseClient.from('study_progress').upsert({
+          user_id: progressData.userId,
+          answers: snapshot.answers,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+      } catch (e) {
+        try {
+          await window.studySupabaseClient.auth.updateUser({ data: { study_progress: snapshot } });
+        } catch (syncErr) {
+          // Keep local data if the remote sync is unavailable.
+        }
+      }
     }).catch(function() { /* local progress remains available if sync is offline */ });
   }
   async function loadProgressInternal(user) {
     var localData = readLocalProgress(user.id);
-    var remoteData = user.user_metadata && user.user_metadata.study_progress || { answers: {} };
+    var remoteData = await readRemoteProgress(user);
     progressData = { userId: user.id, answers: mergeProgress(localData, remoteData).answers };
     saveLocalProgress();
     syncProgress();
@@ -1537,6 +1567,72 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
       }
     });
   });
+  function getWebsiteSession() {
+    try {
+      return JSON.parse(localStorage.getItem("website_session") || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+  function saveWebsiteSession(user) {
+    localStorage.setItem("website_session", JSON.stringify({
+      id: user.id,
+      email: user.email,
+      loggedInAt: Date.now()
+    }));
+  }
+  function clearWebsiteSession() {
+    localStorage.removeItem("website_session");
+  }
+  async function websiteHashPassword(password) {
+    var bytes = new TextEncoder().encode(password);
+    var digest = await crypto.subtle.digest("SHA-256", bytes);
+    var hex = Array.from(new Uint8Array(digest)).map(function(b) {
+      return b.toString(16).padStart(2, "0");
+    }).join("");
+    return hex;
+  }
+  async function websiteSignUp(email, password) {
+    if (!supabaseClient) {
+      throw new Error("Add your Supabase URL and anon key to supabase-config.js first.");
+    }
+    var normalizedEmail = email.toLowerCase();
+    var hashedPassword = await websiteHashPassword(password);
+    var lookup = await supabaseClient.from("website_accounts").select("id").eq("email", normalizedEmail).maybeSingle();
+    if (lookup.error && lookup.error.code !== "PGRST116") throw lookup.error;
+    if (lookup.data) {
+      throw new Error("An account with that email already exists.");
+    }
+    var result = await supabaseClient.from("website_accounts").insert([{ email: normalizedEmail, password_hash: hashedPassword }]).select("id, email").single();
+    if (result.error) throw result.error;
+    return result.data;
+  }
+  async function websiteSignIn(email, password) {
+    if (!supabaseClient) {
+      throw new Error("Add your Supabase URL and anon key to supabase-config.js first.");
+    }
+    var normalizedEmail = email.toLowerCase();
+    var hashedPassword = await websiteHashPassword(password);
+    var result = await supabaseClient.from("website_accounts").select("id, email, password_hash").eq("email", normalizedEmail).maybeSingle();
+    if (result.error && result.error.code !== "PGRST116") throw result.error;
+    if (!result.data) {
+      throw new Error("No account found for that email.");
+    }
+    if (result.data.password_hash !== hashedPassword) {
+      throw new Error("Incorrect password.");
+    }
+    return { id: result.data.id, email: result.data.email };
+  }
+  function hydrateWebsiteSession() {
+    var session = getWebsiteSession();
+    if (!session || !session.id || !session.email) return false;
+    window.studyUser = session.id;
+    window.loadStudyProgress({ id: session.id, email: session.email, user_metadata: {} });
+    document.getElementById("hubUserName").textContent = session.email;
+    showScreen("landing");
+    return true;
+  }
+
   if (authForm) authForm.addEventListener("submit", async function(e) {
     e.preventDefault();
     var email = document.getElementById("emailInput").value.trim().toLowerCase();
@@ -1545,49 +1641,42 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     var submit = document.getElementById("authSubmit");
     error.className = "auth-error";
     error.textContent = "";
-    if (!supabaseClient) {
-      error.textContent = "Add your Supabase URL and anon key to supabase-config.js first.";
-      return;
-    }
     submit.disabled = true;
     try {
       var result;
       if (authMode === "signup") {
-        result = await supabaseClient.auth.signUp({ email: email, password: password });
-        if (result.error) throw result.error;
-        if (!result.data.session) {
-          error.className = "auth-error correct-text";
-          error.textContent = "Account created. Check your email to confirm it, then log in.";
-          return;
-        }
+        result = await websiteSignUp(email, password);
+        error.className = "auth-error correct-text";
+        error.textContent = "Account created successfully. You can log in now.";
       } else {
-        result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-        if (result.error) throw result.error;
+        result = await websiteSignIn(email, password);
       }
-      window.studyUser = result.data.user.id;
-      await window.loadStudyProgress(result.data.user);
-      document.getElementById("hubUserName").textContent = result.data.user.email;
+      window.studyUser = result.id;
+      saveWebsiteSession(result);
+      await window.loadStudyProgress({ id: result.id, email: result.email, user_metadata: {} });
+      document.getElementById("hubUserName").textContent = result.email;
       document.getElementById("passwordInput").value = "";
       showScreen("landing");
     } catch (err) {
-      error.textContent = err.message || "Unable to authenticate. Check your email and password.";
+      if (err && err.code === "PGRST205") {
+        error.textContent = "The database is not set up yet. Run New folder/supabase-schema.sql in your Supabase SQL Editor, then refresh this page.";
+      } else {
+        error.textContent = err.message || "Unable to authenticate. Check your email and password.";
+      }
     } finally {
       submit.disabled = false;
     }
   });
 
   if (supabaseClient) {
-    supabaseClient.auth.onAuthStateChange(function(_event, session) {
-      if (session && session.user) {
-        window.studyUser = session.user.id;
-        window.loadStudyProgress(session.user);
-        document.getElementById("hubUserName").textContent = session.user.email;
-        if (screens.auth && !screens.auth.classList.contains("hidden")) showScreen("landing");
-      } else {
-        window.studyUser = null;
-        showScreen("auth");
-      }
-    });
+    var existingSession = getWebsiteSession();
+    if (existingSession && existingSession.id && existingSession.email) {
+      hydrateWebsiteSession();
+    } else {
+      showScreen("auth");
+    }
+  } else {
+    showScreen("auth");
   }
 
   function getProgress() {
@@ -1664,10 +1753,10 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   document.getElementById("reviewBackBtn").addEventListener("click", function() { renderProgress(); showScreen("progress"); });
   document.getElementById("reviewBtn").addEventListener("click", startReview);
   document.getElementById("logoutBtn").addEventListener("click", async function() {
-    if (!supabaseClient) return;
-    var result = await supabaseClient.auth.signOut();
-    if (result.error) document.getElementById("authError").textContent = result.error.message;
+    clearWebsiteSession();
+    window.studyUser = null;
     setAuthMode("login");
+    showScreen("auth");
   });
 
   var backToHubBtn = document.getElementById("backToHubBtn");
