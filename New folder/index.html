@@ -1598,36 +1598,48 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     }).join("");
     return hex;
   }
-  async function websiteSignUp(email, password) {
-    if (!supabaseClient) {
-      throw new Error("Add your Supabase URL and anon key to supabase-config.js first.");
+  async function websiteRestRequest(path, options) {
+    var response = await fetch(window.SUPABASE_URL + "/rest/v1/" + path, Object.assign({
+      headers: {
+        apikey: window.SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + window.SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+      }
+    }, options || {}));
+    var body = await response.text();
+    var data = body ? JSON.parse(body) : null;
+    if (!response.ok) {
+      var error = new Error(data && (data.message || data.error || data.hint) || "Supabase request failed.");
+      error.code = data && data.code;
+      throw error;
     }
+    return data;
+  }
+  async function websiteSignUp(email, password) {
     var normalizedEmail = email.toLowerCase();
     var hashedPassword = await websiteHashPassword(password);
-    var lookup = await supabaseClient.from("website_accounts").select("id").eq("email", normalizedEmail).maybeSingle();
-    if (lookup.error && lookup.error.code !== "PGRST116") throw lookup.error;
-    if (lookup.data) {
+    var lookup = await websiteRestRequest("website_accounts?select=id&email=eq." + encodeURIComponent(normalizedEmail));
+    if (lookup && lookup.length) {
       throw new Error("An account with that email already exists.");
     }
-    var result = await supabaseClient.from("website_accounts").insert([{ email: normalizedEmail, password_hash: hashedPassword }]).select("id, email").single();
-    if (result.error) throw result.error;
-    return result.data;
+    var result = await websiteRestRequest("website_accounts?select=id,email", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify([{ email: normalizedEmail, password_hash: hashedPassword }])
+    });
+    return result[0];
   }
   async function websiteSignIn(email, password) {
-    if (!supabaseClient) {
-      throw new Error("Add your Supabase URL and anon key to supabase-config.js first.");
-    }
     var normalizedEmail = email.toLowerCase();
     var hashedPassword = await websiteHashPassword(password);
-    var result = await supabaseClient.from("website_accounts").select("id, email, password_hash").eq("email", normalizedEmail).maybeSingle();
-    if (result.error && result.error.code !== "PGRST116") throw result.error;
-    if (!result.data) {
+    var result = await websiteRestRequest("website_accounts?select=id,email,password_hash&email=eq." + encodeURIComponent(normalizedEmail));
+    if (!result || !result.length) {
       throw new Error("No account found for that email.");
     }
-    if (result.data.password_hash !== hashedPassword) {
+    if (result[0].password_hash !== hashedPassword) {
       throw new Error("Incorrect password.");
     }
-    return { id: result.data.id, email: result.data.email };
+    return { id: result[0].id, email: result[0].email };
   }
   function hydrateWebsiteSession() {
     var session = getWebsiteSession();
@@ -2011,7 +2023,6 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
       if (!result.data.session) showScreen("auth");
     });
   } else {
-    document.getElementById("authError").textContent = "Add your Supabase URL and anon key to supabase-config.js to enable login.";
     showScreen("auth");
   }
 })();
