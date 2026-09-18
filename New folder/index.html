@@ -563,6 +563,9 @@
     <div class="back-row"><button class="btn small secondary" id="reviewBackBtn">Back to progress</button></div>
     <div class="card">
       <div class="quiz-progress-row"><div id="reviewCounter"></div><div id="reviewScore"></div></div>
+      <div class="map-box hidden" id="reviewMapBox">
+        <svg id="reviewMapSvg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
       <div class="quiz-term-card" id="reviewPrompt"></div>
       <div class="quiz-choices" id="reviewChoices"></div>
       <div class="quiz-footer"><button class="btn" id="reviewNextBtn" style="display:none;">Next</button></div>
@@ -1308,6 +1311,18 @@
       if (pct > prevBest) localStorage.setItem(key, String(pct));
     } catch (e) { /* storage unavailable, ignore */ }
   }
+
+  window.renderMapReview = function(svg, question, category) {
+    var pack = PACK_ORDER.map(function(packId) { return PACKS[packId]; }).filter(function(pack) {
+      return pack.label === category;
+    })[0];
+    if (!pack) return false;
+    var item = pack.items.filter(function(mapItem) { return mapItem.name === question; })[0];
+    if (!item) return false;
+    buildBaseMap(svg, pack);
+    drawMarker(svg, item);
+    return true;
+  };
 })();
 </script>
 
@@ -1486,7 +1501,15 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     var item = reviewQuestions[reviewPos]; reviewAnswered = false;
     document.getElementById("reviewCounter").textContent = "Question " + (reviewPos + 1) + " / " + reviewQuestions.length;
     document.getElementById("reviewScore").textContent = "Score: " + reviewScore;
-    document.getElementById("reviewPrompt").textContent = (item.type === "map" ? "Map question: What was marked? " : "Vocabulary term: ") + item.question;
+    var mapBox = document.getElementById("reviewMapBox");
+    var prompt = document.getElementById("reviewPrompt");
+    if (item.type === "map") {
+      mapBox.classList.toggle("hidden", !window.renderMapReview(document.getElementById("reviewMapSvg"), item.question, item.category));
+      prompt.textContent = "What is marked on the map?";
+    } else {
+      mapBox.classList.add("hidden");
+      prompt.textContent = "Vocabulary term: " + item.question;
+    }
     document.getElementById("reviewNextBtn").style.display = "none";
     var wrap = document.getElementById("reviewChoices"); wrap.innerHTML = "";
     item.choices.forEach(function(choice) {
