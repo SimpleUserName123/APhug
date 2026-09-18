@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Open app in browser",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "file:///c:/Users/rishi/Downloads/APhug-main/APhug/New%20folder/index.html",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    }
+  ]
+}

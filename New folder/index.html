@@ -642,7 +642,7 @@
   </div><!-- /quizApp -->
 </div><!-- /wrap -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script>
 (function() {
@@ -985,6 +985,7 @@
     syncProgress();
   }
   window.loadStudyProgress = loadProgressInternal;
+  window.loadProgress = loadProgressInternal;
   window.getStudyProgress = function() {
     if (progressData.userId === window.studyUser) return { answers: progressData.answers || {} };
     return window.studyUser ? readLocalProgress(window.studyUser) : { answers: {} };
@@ -1439,8 +1440,14 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var supabaseConfigured = window.SUPABASE_URL && window.SUPABASE_ANON_KEY &&
     window.SUPABASE_URL.indexOf("YOUR_PROJECT_REF") === -1 &&
     window.SUPABASE_ANON_KEY.indexOf("YOUR_PUBLIC_ANON_KEY") === -1;
-  var supabaseClient = supabaseConfigured ?
-    window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
+  var supabaseClient = null;
+  if (supabaseConfigured && window.supabase && typeof window.supabase.createClient === "function") {
+    try {
+      supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    } catch (err) {
+      console.warn("Supabase client setup failed:", err);
+    }
+  }
   window.studySupabaseClient = supabaseClient;
 
   if (!window.loadStudyProgress) {
