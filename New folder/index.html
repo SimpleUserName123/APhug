@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rishi's Study Resources</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOCAL ACCOUNT SCREEN -->
+  <div id="authScreen" class="card auth-card">
+    <h1 id="authTitle">Welcome back</h1>
+    <p id="authIntro">Log in to keep your quiz history and personalized review set on this device.</p>
+    <form id="authForm" class="auth-form">
+      <input id="usernameInput" type="text" autocomplete="username" placeholder="Username" required maxlength="24">
+      <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" required minlength="4">
+      <button class="btn" id="authSubmit" type="submit">Log in</button>
+      <div class="auth-error" id="authError"></div>
+    </form>
+    <div class="auth-switch"><span id="authSwitchText">New here?</span> <button class="link-btn" id="authSwitchBtn" type="button">Create an account</button></div>
+  </div>
+
+  <!-- LANDING SCREEN -->
+  <div id="landingScreen" class="landing">
+    <h1>Rishi's Study Resources</h1>
+    <p>Hello, I'm Rishi, and this is a website I coded. It contains the material I used to succeed in AP Human Geography. If I shared this with you, it means I trust you. Please do not copy my work, I spent my time on it, and you should too. If you have feedback please tell me in person.</p>
+    <div class="landing-badges">
+      <span class="landing-badge">Map Quizzes</span>
+      <span class="landing-badge">Key Terms</span>
+      <span class="landing-badge">Personalized Review</span>
+    </div>
+    <button class="landing-cta" id="enterBtn">Let's go</button>
+  </div>
+
+  <!-- HUB SCREEN -->
+  <div id="hubScreen" class="hidden">
+    <div class="user-bar"><div class="user-name">Signed in as <strong id="hubUserName"></strong></div><button class="btn small secondary" id="logoutBtn">Log out</button></div>
+    <div class="hub-title">Pick a study tool</div>
+    <div class="hub-subtitle">Tap a card to jump in</div>
+    <div class="hub-grid">
+      <button class="hub-card is-ready" id="hubMapQuiz">
+        <div class="hub-tag">Ready</div>
+        <div><div class="hub-name">Map Quizzes</div></div>
+        <div class="hub-desc">Used to help memorize the location of countries and land marks.</div>
+      </button>
+      <button class="hub-card" id="hubKeyTerms">
+        <div class="hub-tag">Units 1-7</div>
+        <div><div class="hub-name">Key Terms</div></div>
+        <div class="hub-desc">Key terms and definitions for important vocabulary.</div>
+      </button>
+      <button class="hub-card is-ready" id="hubProgress">
+        <div class="hub-tag">Your data</div>
+        <div><div class="hub-name">My Progress</div></div>
+        <div class="hub-desc">See map and vocabulary statistics, then practice your 20 most-missed questions.</div>
+      </button>
+      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+        <div class="hub-name">Placeholder</div>
+      </button>
+      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+        <div class="hub-name">Placeholder</div>
+      </button>
+      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+        <div class="hub-name">Placeholder</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- KEY TERMS: FOLDER SCREEN (Key Terms vs Vocab Quizzes) -->
+  <div id="keyTermsFolderScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="keyTermsFolderBackBtn">Back to menu</button></div>
+    <div class="hub-title">Key Terms</div>
+    <div class="hub-subtitle">Pick a folder</div>
+    <div class="hub-grid">
+      <button class="hub-card is-ready" id="folderKeyTerms">
+        <div class="hub-tag">Unit 1 ready</div>
+        <div><div class="hub-name">Key Terms</div></div>
+        <div class="hub-desc">Flip through definitions and real-world examples for each unit.</div>
+      </button>
+      <button class="hub-card is-ready" id="folderVocabQuiz">
+        <div class="hub-tag">Unit 1 ready</div>
+        <div><div class="hub-name">Vocab Quizzes</div></div>
+        <div class="hub-desc">Multiple choice practice matching each word to its definition.</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- KEY TERMS: UNITS SCREEN -->
+  <div id="unitsScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="unitsBackBtn">Back to folders</button></div>
+    <div class="hub-title">Key Terms</div>
+    <div class="hub-subtitle">Pick a unit</div>
+    <div class="units-grid" id="unitsGrid"></div>
+  </div>
+
+  <!-- VOCAB QUIZZES: UNITS SCREEN -->
+  <div id="quizUnitsScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="quizUnitsBackBtn">Back to folders</button></div>
+    <div class="hub-title">Vocab Quizzes</div>
+    <div class="hub-subtitle">Pick a unit</div>
+    <div class="units-grid" id="quizUnitsGrid"></div>
+  </div>
+
+  <!-- VOCAB QUIZZES: UNIT DETAIL SCREEN -->
+  <div id="quizUnitDetailScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="quizUnitDetailBackBtn">Back to units</button></div>
+    <div class="hub-title" id="quizUnitDetailTitle">Unit 1</div>
+    <div id="quizPlaceholder" class="slide-slot hidden">Vocab quiz not added yet, check back later.</div>
+    <div id="quizWrap" class="hidden">
+      <div class="quiz-progress-row">
+        <div id="quizProgress">Question 1 / 1</div>
+        <div id="quizScore">Score: 0</div>
+      </div>
+      <div class="quiz-term-card" id="quizTermCard"></div>
+      <div class="quiz-choices" id="quizChoices"></div>
+      <div class="quiz-footer">
+        <button class="btn" id="quizNextBtn" style="display:none;">Next</button>
+      </div>
+    </div>
+    <div id="quizResult" class="hidden">
+      <div class="quiz-result-card">
+        <h2>Quiz complete!</h2>
+        <p id="quizResultScore"></p>
+        <div class="row" style="justify-content:center;">
+          <button class="btn" id="quizRestartBtn">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY TERMS: UNIT DETAIL SCREEN -->
+  <div id="unitDetailScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="unitDetailBackBtn">Back to units</button></div>
+    <div class="hub-title" id="unitDetailTitle">Unit 1</div>
+    <div id="slidePlaceholder" class="slide-slot hidden">Slideshow not added yet, a Google Slides embed for this unit will go here.</div>
+    <div id="slideshowWrap" class="hidden">
+      <div class="slide-toolbar">
+        <select id="slideJump"></select>
+        <div class="slide-counter" id="slideCounter">1 / 1</div>
+      </div>
+      <div class="slide-frame">
+        <img id="slideImg" src="" alt="Key term card">
+      </div>
+      <div class="slide-nav">
+        <button class="btn small secondary" id="slidePrevBtn">&larr; Prev</button>
+        <button class="btn small secondary" id="slideNextBtn">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLACEHOLDER SCREEN -->
+  <div id="placeholderScreen" class="card hidden placeholder-card">
+    <h2 id="phTitle">Placeholder</h2>
+    <p>Nothing here yet, check back later.</p>
+    <button class="btn secondary" id="phBackBtn">Back to menu</button>
+  </div>
+
+  <!-- PROGRESS SCREEN -->
+  <div id="progressScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="progressBackBtn">Back to menu</button></div>
+    <div class="card">
+      <div class="hub-title">My Progress</div>
+      <div class="hub-subtitle">Your results are saved on this device(only this device for now) for this username.</div>
+      <div class="stat-grid" id="progressStats"></div>
+      <div class="score-history-panel">
+        <strong>Quiz score history</strong>
+        <div id="scoreHistory" class="stat-label"></div>
+      </div>
+      <div id="progressBreakdown"></div>
+      <div class="row" style="margin-top:18px;"><button class="btn" id="reviewBtn">Practice my 20 most missed</button></div>
+    </div>
+  </div>
+
+  <!-- PERSONALIZED REVIEW SCREEN -->
+  <div id="reviewScreen" class="hidden">
+    <div class="back-row"><button class="btn small secondary" id="reviewBackBtn">Back to progress</button></div>
+    <div class="card">
+      <div class="quiz-progress-row"><div id="reviewCounter"></div><div id="reviewScore"></div></div>
+      <div class="map-box hidden" id="reviewMapBox">
+        <svg id="reviewMapSvg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="quiz-term-card" id="reviewPrompt"></div>
+      <div class="quiz-choices" id="reviewChoices"></div>
+      <div class="quiz-footer"><button class="btn" id="reviewNextBtn" style="display:none;">Next</button></div>
+      <div id="reviewResult" class="quiz-result-card hidden"><h2>Review complete!</h2><p id="reviewResultText"></p></div>
+    </div>
+  </div>
+
+  <!-- QUIZ APP -->
+  <div id="quizApp" class="hidden">
+  <div class="row" style="margin-bottom:12px;">
+    <button class="btn small secondary" id="backToHubBtn">Back to menu</button>
+  </div>
+  <h1 id="mainTitle">World Geography Map Quiz</h1>
+  <div class="subtitle" id="mainSubtitle">Choose a topic below, pick your categories, and start quizzing.</div>
+
+  <!-- SETUP SCREEN -->
+  <div class="card" id="setupScreen">
+    <strong>Choose a setting</strong>
+    <div class="pack-grid" id="packGrid"></div>
+
+    <strong>Choose your categories</strong>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="row">
+      <button class="btn small secondary" id="selectAllBtn">Select all</button>
+      <button class="btn small secondary" id="selectNoneBtn">Select none</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+    <div class="row">
+      <label class="field-label" for="lengthSelect">Number of questions:</label>
+      <select id="lengthSelect">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="30">30</option>
+        <option value="all">All available</option>
+      </select>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn" id="startBtn">Start quiz</button>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <label class="field-label" for="difficultySelect">Difficulty:</label>
+      <select id="difficultySelect">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div class="feedback wrong-text" id="setupError"></div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="card hidden" id="quizScreen">
+    <div class="quiz-top">
+      <span id="qCounter">Question 1 of 20</span>
+      <span id="qScore">Score: 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="map-box">
+      <svg id="mapSvg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="question-text" id="questionText">What is marked on the map?</div>
+    <div class="options" id="optionsGrid"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="row" style="margin-top:10px; justify-content:flex-end;">
+      <button class="btn hidden" id="nextBtn">Next â†’</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="card hidden" id="resultsScreen">
+    <strong>Quiz complete</strong>
+    <div class="score-big" id="finalScore">0 / 0</div>
+    <div id="finalMsg" style="color:var(--text-muted); font-size:0.9rem;"></div>
+    <div id="reviewWrap"></div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn" id="restartBtn">Choose new setting</button>
+      <button class="btn secondary" id="retryBtn">Retry same setup</button>
+    </div>
+  </div>
+
+  <footer id="footerNote">World coastlines from Natural Earth, equirectangular projection.</footer>
+  </div><!-- /quizApp -->
+</div><!-- /wrap -->
+
+<script src="app.js" defer></script>
+</body>
+</html>
