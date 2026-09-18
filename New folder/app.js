@@ -812,6 +812,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
         error.textContent = "Username or password is incorrect."; return;
       }
       window.studyUser = username;
+      localStorage.setItem("study_current_user", username);
       document.getElementById("hubUserName").textContent = username;
       document.getElementById("passwordInput").value = "";
       showScreen("landing");
@@ -908,7 +909,12 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   document.getElementById("progressBackBtn").addEventListener("click", function() { showScreen("hub"); });
   document.getElementById("reviewBackBtn").addEventListener("click", function() { renderProgress(); showScreen("progress"); });
   document.getElementById("reviewBtn").addEventListener("click", startReview);
-  document.getElementById("logoutBtn").addEventListener("click", function() { window.studyUser = null; setAuthMode("login"); showScreen("auth"); });
+  document.getElementById("logoutBtn").addEventListener("click", function() {
+    window.studyUser = null;
+    localStorage.removeItem("study_current_user");
+    setAuthMode("login");
+    showScreen("auth");
+  });
 
   var backToHubBtn = document.getElementById("backToHubBtn");
   if (backToHubBtn) backToHubBtn.addEventListener("click", function() { showScreen("hub"); });
@@ -1147,6 +1153,19 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var quizUnitDetailBackBtn = document.getElementById("quizUnitDetailBackBtn");
   if (quizUnitDetailBackBtn) quizUnitDetailBackBtn.addEventListener("click", function() { showScreen("quizUnits"); });
 
-  // Every visit starts at login; quiz history remains attached to the chosen username.
-  showScreen("auth");
+  // Restore the local session when the saved account still exists.
+  try {
+    var savedUser = localStorage.getItem("study_current_user");
+    var savedAccounts = JSON.parse(localStorage.getItem("study_accounts") || "{}");
+    if (savedUser && savedAccounts[savedUser]) {
+      window.studyUser = savedUser;
+      document.getElementById("hubUserName").textContent = savedUser;
+      showScreen("landing");
+    } else {
+      localStorage.removeItem("study_current_user");
+      showScreen("auth");
+    }
+  } catch (err) {
+    showScreen("auth");
+  }
 })();
