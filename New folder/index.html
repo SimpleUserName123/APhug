@@ -923,7 +923,7 @@
       " L " + (p.x + size).toFixed(1) + "," + (p.y + h / 2).toFixed(1) + " Z";
   }
 
-  var STATE = {
+  window.STATE = window.STATE || {
     packId: "general",
     selectedCats: {},
     quizItems: [],
@@ -933,6 +933,7 @@
     currentCorrect: null,
     answered: false
   };
+  var STATE = window.STATE;
 
   window.recordStudyAnswer = function(type, question, correct, category, choices) {
     if (!window.studyUser) return;
