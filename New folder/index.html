@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1372,6 +1372,25 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     Object.keys(screens).forEach(function(key) {
       if (screens[key]) screens[key].classList.toggle("hidden", key !== name);
     });
+    if (name === "auth") {
+      var authUsernameInput = document.getElementById("usernameInput");
+      var authPasswordInput = document.getElementById("passwordInput");
+      if (authUsernameInput) {
+        authUsernameInput.removeAttribute("readonly");
+        authUsernameInput.disabled = false;
+        authUsernameInput.setAttribute("aria-disabled", "false");
+      }
+      if (authPasswordInput) {
+        authPasswordInput.removeAttribute("readonly");
+        authPasswordInput.disabled = false;
+        authPasswordInput.setAttribute("aria-disabled", "false");
+      }
+      setTimeout(function() {
+        if (authUsernameInput && document.activeElement !== authUsernameInput) {
+          authUsernameInput.focus();
+        }
+      }, 0);
+    }
     window.scrollTo(0, 0);
   }
 
@@ -1390,6 +1409,20 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     document.getElementById("authError").textContent = "";
   }
   if (authSwitchBtn) authSwitchBtn.addEventListener("click", function() { setAuthMode(authMode === "login" ? "signup" : "login"); });
+  var authInputs = [document.getElementById("usernameInput"), document.getElementById("passwordInput")];
+  authInputs.forEach(function(input) {
+    if (!input) return;
+    input.readOnly = false;
+    input.disabled = false;
+    input.setAttribute("aria-disabled", "false");
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Tab") return;
+      if (input.readOnly || input.disabled) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
+  });
   if (authForm) authForm.addEventListener("submit", function(e) {
     e.preventDefault();
     var username = document.getElementById("usernameInput").value.trim().toLowerCase();
