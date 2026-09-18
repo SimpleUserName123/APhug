@@ -371,7 +371,7 @@
   .placeholder-card h2 { margin: 4px 0 8px; }
   .placeholder-card p { color: var(--text-muted); max-width: 380px; margin: 0 auto 20px; }
 
-    /* ---------- Local account and progress dashboard ---------- */
+    /* ---------- Supabase account and progress dashboard ---------- */
     .auth-card { max-width: 420px; margin: 12vh auto 0; }
     .auth-card h1 { margin-bottom: 8px; }
     .auth-card p { color: var(--text-muted); line-height: 1.45; font-size: 0.9rem; }
@@ -399,13 +399,13 @@
 <body>
 <div class="wrap">
 
-  <!-- LOCAL ACCOUNT SCREEN -->
+  <!-- SUPABASE AUTH SCREEN -->
   <div id="authScreen" class="card auth-card">
     <h1 id="authTitle">Welcome back</h1>
-    <p id="authIntro">Log in to keep your quiz history and personalized review set on this device.</p>
+    <p id="authIntro">Log in to access your study resources on any device.</p>
     <form id="authForm" class="auth-form">
-      <input id="usernameInput" type="text" autocomplete="username" placeholder="Username" required maxlength="24">
-      <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" required minlength="4">
+      <input id="emailInput" type="email" autocomplete="email" placeholder="Email address" required>
+      <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Password" required minlength="6">
       <button class="btn" id="authSubmit" type="submit">Log in</button>
       <div class="auth-error" id="authError"></div>
     </form>
@@ -642,6 +642,8 @@
   </div><!-- /quizApp -->
 </div><!-- /wrap -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
 (function() {
   "use strict";
@@ -1382,18 +1384,23 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     review: document.getElementById("reviewScreen"),
     quiz: document.getElementById("quizApp")
   };
+  var supabaseConfigured = window.SUPABASE_URL && window.SUPABASE_ANON_KEY &&
+    window.SUPABASE_URL.indexOf("YOUR_PROJECT_REF") === -1 &&
+    window.SUPABASE_ANON_KEY.indexOf("YOUR_PUBLIC_ANON_KEY") === -1;
+  var supabaseClient = supabaseConfigured ?
+    window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
 
   function showScreen(name) {
     Object.keys(screens).forEach(function(key) {
       if (screens[key]) screens[key].classList.toggle("hidden", key !== name);
     });
     if (name === "auth") {
-      var authUsernameInput = document.getElementById("usernameInput");
+      var authEmailInput = document.getElementById("emailInput");
       var authPasswordInput = document.getElementById("passwordInput");
-      if (authUsernameInput) {
-        authUsernameInput.removeAttribute("readonly");
-        authUsernameInput.disabled = false;
-        authUsernameInput.setAttribute("aria-disabled", "false");
+      if (authEmailInput) {
+        authEmailInput.removeAttribute("readonly");
+        authEmailInput.disabled = false;
+        authEmailInput.setAttribute("aria-disabled", "false");
       }
       if (authPasswordInput) {
         authPasswordInput.removeAttribute("readonly");
@@ -1401,8 +1408,8 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
         authPasswordInput.setAttribute("aria-disabled", "false");
       }
       setTimeout(function() {
-        if (authUsernameInput && document.activeElement !== authUsernameInput) {
-          authUsernameInput.focus();
+        if (authEmailInput && document.activeElement !== authEmailInput) {
+          authEmailInput.focus();
         }
       }, 0);
     }
@@ -1416,15 +1423,15 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     authMode = mode;
     document.getElementById("authTitle").textContent = mode === "login" ? "Welcome back" : "Create your account";
     document.getElementById("authIntro").textContent = mode === "login" ?
-      "Log in to keep your quiz history and personalized review set on this device." :
-      "Create a local account so your progress stays separate from other learners on this device.";
+      "Log in to access your study resources on any device." :
+      "Create an account to access your study resources on any device.";
     document.getElementById("authSubmit").textContent = mode === "login" ? "Log in" : "Create account";
     document.getElementById("authSwitchText").textContent = mode === "login" ? "New here?" : "Already have an account?";
     authSwitchBtn.textContent = mode === "login" ? "Create an account" : "Log in";
     document.getElementById("authError").textContent = "";
   }
   if (authSwitchBtn) authSwitchBtn.addEventListener("click", function() { setAuthMode(authMode === "login" ? "signup" : "login"); });
-  var authInputs = [document.getElementById("usernameInput"), document.getElementById("passwordInput")];
+  var authInputs = [document.getElementById("emailInput"), document.getElementById("passwordInput")];
   authInputs.forEach(function(input) {
     if (!input) return;
     input.readOnly = false;
@@ -1438,28 +1445,56 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
       }
     });
   });
-  if (authForm) authForm.addEventListener("submit", function(e) {
+  if (authForm) authForm.addEventListener("submit", async function(e) {
     e.preventDefault();
-    var username = document.getElementById("usernameInput").value.trim().toLowerCase();
+    var email = document.getElementById("emailInput").value.trim().toLowerCase();
     var password = document.getElementById("passwordInput").value;
     var error = document.getElementById("authError");
-    if (!/^[a-z0-9_-]{2,24}$/.test(username)) { error.textContent = "Use 2-24 letters, numbers, underscores, or hyphens."; return; }
+    var submit = document.getElementById("authSubmit");
+    error.className = "auth-error";
+    error.textContent = "";
+    if (!supabaseClient) {
+      error.textContent = "Add your Supabase URL and anon key to supabase-config.js first.";
+      return;
+    }
+    submit.disabled = true;
     try {
-      var accounts = JSON.parse(localStorage.getItem("study_accounts") || "{}");
+      var result;
       if (authMode === "signup") {
-        if (accounts[username]) { error.textContent = "That username is already in use."; return; }
-        accounts[username] = password;
-        localStorage.setItem("study_accounts", JSON.stringify(accounts));
-        localStorage.setItem("study_user_" + username, JSON.stringify({ answers: {} }));
-      } else if (accounts[username] !== password) {
-        error.textContent = "Username or password is incorrect."; return;
+        result = await supabaseClient.auth.signUp({ email: email, password: password });
+        if (result.error) throw result.error;
+        if (!result.data.session) {
+          error.className = "auth-error correct-text";
+          error.textContent = "Account created. Check your email to confirm it, then log in.";
+          return;
+        }
+      } else {
+        result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+        if (result.error) throw result.error;
       }
-      window.studyUser = username;
-      document.getElementById("hubUserName").textContent = username;
+      window.studyUser = result.data.user.id;
+      document.getElementById("hubUserName").textContent = result.data.user.email;
       document.getElementById("passwordInput").value = "";
       showScreen("landing");
-    } catch (err) { error.textContent = "Local storage is unavailable in this browser."; }
+    } catch (err) {
+      error.textContent = err.message || "Unable to authenticate. Check your email and password.";
+    } finally {
+      submit.disabled = false;
+    }
   });
+
+  if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange(function(_event, session) {
+      if (session && session.user) {
+        window.studyUser = session.user.id;
+        document.getElementById("hubUserName").textContent = session.user.email;
+        if (screens.auth && !screens.auth.classList.contains("hidden")) showScreen("landing");
+      } else {
+        window.studyUser = null;
+        showScreen("auth");
+      }
+    });
+  }
 
   function getProgress() {
     try { return JSON.parse(localStorage.getItem("study_user_" + window.studyUser) || '{"answers":{}}'); }
@@ -1535,7 +1570,12 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   document.getElementById("progressBackBtn").addEventListener("click", function() { showScreen("hub"); });
   document.getElementById("reviewBackBtn").addEventListener("click", function() { renderProgress(); showScreen("progress"); });
   document.getElementById("reviewBtn").addEventListener("click", startReview);
-  document.getElementById("logoutBtn").addEventListener("click", function() { window.studyUser = null; setAuthMode("login"); showScreen("auth"); });
+  document.getElementById("logoutBtn").addEventListener("click", async function() {
+    if (!supabaseClient) return;
+    var result = await supabaseClient.auth.signOut();
+    if (result.error) document.getElementById("authError").textContent = result.error.message;
+    setAuthMode("login");
+  });
 
   var backToHubBtn = document.getElementById("backToHubBtn");
   if (backToHubBtn) backToHubBtn.addEventListener("click", function() { showScreen("hub"); });
@@ -1773,8 +1813,19 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var quizUnitDetailBackBtn = document.getElementById("quizUnitDetailBackBtn");
   if (quizUnitDetailBackBtn) quizUnitDetailBackBtn.addEventListener("click", function() { showScreen("quizUnits"); });
 
-  // Every visit starts at login; quiz history remains attached to the chosen username.
-  showScreen("auth");
+  if (supabaseClient) {
+    supabaseClient.auth.getSession().then(function(result) {
+      if (result.error) {
+        document.getElementById("authError").textContent = result.error.message;
+        showScreen("auth");
+        return;
+      }
+      if (!result.data.session) showScreen("auth");
+    });
+  } else {
+    document.getElementById("authError").textContent = "Add your Supabase URL and anon key to supabase-config.js to enable login.";
+    showScreen("auth");
+  }
 })();
 </script>
 </body>
