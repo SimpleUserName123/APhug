@@ -978,14 +978,14 @@
       return window.studySupabaseClient.auth.updateUser({ data: { study_progress: snapshot } });
     }).catch(function() { /* local progress remains available if sync is offline */ });
   }
-  async function loadProgress(user) {
+  async function loadProgressInternal(user) {
     var localData = readLocalProgress(user.id);
     var remoteData = user.user_metadata && user.user_metadata.study_progress || { answers: {} };
     progressData = { userId: user.id, answers: mergeProgress(localData, remoteData).answers };
     saveLocalProgress();
     syncProgress();
   }
-  window.loadStudyProgress = loadProgress;
+  window.loadStudyProgress = loadProgressInternal;
   window.getStudyProgress = function() {
     if (progressData.userId === window.studyUser) return { answers: progressData.answers || {} };
     return window.studyUser ? readLocalProgress(window.studyUser) : { answers: {} };
@@ -1443,6 +1443,38 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var supabaseClient = supabaseConfigured ?
     window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
   window.studySupabaseClient = supabaseClient;
+
+  if (!window.loadStudyProgress) {
+    window.loadStudyProgress = async function(user) {
+      var localKey = "study_user_" + user.id;
+      var localData = { answers: {} };
+      try { localData = JSON.parse(localStorage.getItem(localKey) || '{"answers":{}}'); }
+      catch (e) { /* local storage is optional */ }
+      var remoteData = user.user_metadata && user.user_metadata.study_progress || { answers: {} };
+      var merged = { answers: {} };
+      Object.keys(localData.answers || {}).forEach(function(id) { merged.answers[id] = localData.answers[id]; });
+      Object.keys(remoteData.answers || {}).forEach(function(id) {
+        var local = merged.answers[id] || {};
+        var remote = remoteData.answers[id] || {};
+        merged.answers[id] = {
+          type: remote.type || local.type,
+          question: remote.question || local.question,
+          category: remote.category || local.category,
+          correct: Math.max(Number(local.correct) || 0, Number(remote.correct) || 0),
+          wrong: Math.max(Number(local.wrong) || 0, Number(remote.wrong) || 0),
+          choices: remote.choices && remote.choices.length ? remote.choices : (local.choices || []),
+          lastSeen: Math.max(Number(local.lastSeen) || 0, Number(remote.lastSeen) || 0)
+        };
+      });
+      try { localStorage.setItem(localKey, JSON.stringify(merged)); }
+      catch (e) { /* local storage is optional */ }
+      window.studyFallbackProgress = merged;
+      return merged;
+    };
+  }
+  if (!window.getStudyProgress) {
+    window.getStudyProgress = function() { return window.studyFallbackProgress || { answers: {} }; };
+  }
 
   function showScreen(name) {
     Object.keys(screens).forEach(function(key) {
