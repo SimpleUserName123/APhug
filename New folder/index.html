@@ -937,20 +937,67 @@
   };
   var STATE = window.STATE;
 
+  var progressData = { userId: null, answers: {} };
+  var progressSync = Promise.resolve();
+
+  function progressKey(userId) { return "study_user_" + userId; }
+  function readLocalProgress(userId) {
+    try { return JSON.parse(localStorage.getItem(progressKey(userId)) || '{"answers":{}}'); }
+    catch (e) { return { answers: {} }; }
+  }
+  function mergeProgress(localData, remoteData) {
+    var merged = { answers: {} };
+    var allIds = {};
+    [localData, remoteData].forEach(function(data) {
+      Object.keys((data && data.answers) || {}).forEach(function(id) { allIds[id] = true; });
+    });
+    Object.keys(allIds).forEach(function(id) {
+      var local = (localData.answers || {})[id] || {};
+      var remote = (remoteData.answers || {})[id] || {};
+      merged.answers[id] = {
+        type: remote.type || local.type,
+        question: remote.question || local.question,
+        category: remote.category || local.category,
+        correct: Math.max(Number(local.correct) || 0, Number(remote.correct) || 0),
+        wrong: Math.max(Number(local.wrong) || 0, Number(remote.wrong) || 0),
+        choices: remote.choices && remote.choices.length ? remote.choices : (local.choices || []),
+        lastSeen: Math.max(Number(local.lastSeen) || 0, Number(remote.lastSeen) || 0)
+      };
+    });
+    return merged;
+  }
+  function saveLocalProgress() {
+    if (!progressData.userId) return;
+    try { localStorage.setItem(progressKey(progressData.userId), JSON.stringify({ answers: progressData.answers })); }
+    catch (e) { /* storage unavailable, keep the quiz usable */ }
+  }
+  function syncProgress() {
+    if (!window.studySupabaseClient || !progressData.userId) return;
+    var snapshot = JSON.parse(JSON.stringify({ answers: progressData.answers }));
+    progressSync = progressSync.then(function() {
+      return window.studySupabaseClient.auth.updateUser({ data: { study_progress: snapshot } });
+    }).catch(function() { /* local progress remains available if sync is offline */ });
+  }
+  async function loadProgress(user) {
+    var localData = readLocalProgress(user.id);
+    var remoteData = user.user_metadata && user.user_metadata.study_progress || { answers: {} };
+    progressData = { userId: user.id, answers: mergeProgress(localData, remoteData).answers };
+    saveLocalProgress();
+    syncProgress();
+  }
   window.recordStudyAnswer = function(type, question, correct, category, choices) {
     if (!window.studyUser) return;
-    try {
-      var key = "study_user_" + window.studyUser;
-      var data = JSON.parse(localStorage.getItem(key) || '{"answers":{}}');
-      data.answers = data.answers || {};
-      var id = type + "::" + question;
-      var old = data.answers[id] || { type: type, question: question, category: category, correct: 0, wrong: 0, choices: choices || [] };
-      old.choices = choices || old.choices || [];
-      if (correct) old.correct++; else old.wrong++;
-      old.lastSeen = Date.now();
-      data.answers[id] = old;
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) { /* storage unavailable, keep the quiz usable */ }
+    if (progressData.userId !== window.studyUser) {
+      progressData = { userId: window.studyUser, answers: readLocalProgress(window.studyUser).answers || {} };
+    }
+    var id = type + "::" + question;
+    var old = progressData.answers[id] || { type: type, question: question, category: category, correct: 0, wrong: 0, choices: choices || [] };
+    old.choices = choices || old.choices || [];
+    if (correct) old.correct++; else old.wrong++;
+    old.lastSeen = Date.now();
+    progressData.answers[id] = old;
+    saveLocalProgress();
+    syncProgress();
   };
 
   function currentPack() { return PACKS[STATE.packId]; }
@@ -1390,6 +1437,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     window.SUPABASE_ANON_KEY.indexOf("YOUR_PUBLIC_ANON_KEY") === -1;
   var supabaseClient = supabaseConfigured ?
     window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY) : null;
+  window.studySupabaseClient = supabaseClient;
 
   function showScreen(name) {
     Object.keys(screens).forEach(function(key) {
@@ -1474,6 +1522,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
         if (result.error) throw result.error;
       }
       window.studyUser = result.data.user.id;
+      await loadProgress(result.data.user);
       document.getElementById("hubUserName").textContent = result.data.user.email;
       document.getElementById("passwordInput").value = "";
       showScreen("landing");
@@ -1488,6 +1537,7 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     supabaseClient.auth.onAuthStateChange(function(_event, session) {
       if (session && session.user) {
         window.studyUser = session.user.id;
+        loadProgress(session.user);
         document.getElementById("hubUserName").textContent = session.user.email;
         if (screens.auth && !screens.auth.classList.contains("hidden")) showScreen("landing");
       } else {
@@ -1498,8 +1548,8 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   }
 
   function getProgress() {
-    try { return JSON.parse(localStorage.getItem("study_user_" + window.studyUser) || '{"answers":{}}'); }
-    catch (e) { return { answers: {} }; }
+    if (progressData.userId === window.studyUser) return { answers: progressData.answers || {} };
+    return window.studyUser ? readLocalProgress(window.studyUser) : { answers: {} };
   }
   function renderProgress() {
     var answers = Object.keys(getProgress().answers || {}).map(function(key) { return getProgress().answers[key]; });
