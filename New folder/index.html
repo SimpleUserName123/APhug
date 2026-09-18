@@ -976,40 +976,45 @@
     try { localStorage.setItem(progressKey(progressData.userId), JSON.stringify({ answers: progressData.answers })); }
     catch (e) { /* storage unavailable, keep the quiz usable */ }
   }
+  async function progressRestRequest(method, query, body, extraHeaders) {
+    var headers = Object.assign({
+      apikey: window.SUPABASE_ANON_KEY,
+      Authorization: "Bearer " + window.SUPABASE_ANON_KEY,
+      "Content-Type": "application/json"
+    }, extraHeaders || {});
+    var response = await fetch(window.SUPABASE_URL + "/rest/v1/study_progress" + query, {
+      method: method,
+      headers: headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!response.ok) throw new Error("Progress sync failed with status " + response.status + ".");
+    return response;
+  }
   async function readRemoteProgress(user) {
-    if (!window.studySupabaseClient || !user || !user.id) {
+    if (!user || !user.id) {
       return user && user.user_metadata && user.user_metadata.study_progress || { answers: {} };
     }
     try {
-      var result = await window.studySupabaseClient
-        .from('study_progress')
-        .select('answers')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (!result.error && result.data && result.data.answers) {
-        return result.data.answers && typeof result.data.answers === 'object' ? { answers: result.data.answers } : { answers: {} };
-      }
+      var response = await progressRestRequest("GET", "?select=answers&user_id=eq." + encodeURIComponent(user.id));
+      var rows = await response.json();
+      if (rows[0] && rows[0].answers && typeof rows[0].answers === 'object') return { answers: rows[0].answers };
     } catch (e) {
       // Fall back to auth metadata below.
     }
     return (user.user_metadata && user.user_metadata.study_progress) || { answers: {} };
   }
   function syncProgress() {
-    if (!window.studySupabaseClient || !progressData.userId) return;
+    if (!progressData.userId) return;
     var snapshot = JSON.parse(JSON.stringify({ answers: progressData.answers }));
     progressSync = progressSync.then(async function() {
       try {
-        await window.studySupabaseClient.from('study_progress').upsert({
+        await progressRestRequest("POST", "", {
           user_id: progressData.userId,
           answers: snapshot.answers,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        }, { Prefer: "resolution=merge-duplicates,return=minimal" });
       } catch (e) {
-        try {
-          await window.studySupabaseClient.auth.updateUser({ data: { study_progress: snapshot } });
-        } catch (syncErr) {
-          // Keep local data if the remote sync is unavailable.
-        }
+        // Keep local data if the remote sync is unavailable.
       }
     }).catch(function() { /* local progress remains available if sync is offline */ });
   }
