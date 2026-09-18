@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -62,17 +62,18 @@
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    padding: 16px;
+    padding: 24px 18px 48px;
   }
-  .wrap { max-width: 880px; margin: 0 auto; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
   h1 { font-size: 1.4rem; margin: 4px 0 2px; }
   .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
   .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 16px;
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 22px rgba(20, 35, 32, 0.04);
   }
   .pack-grid {
     display: grid;
@@ -262,23 +263,26 @@
   .hub-subtitle { color: var(--text-muted); margin-bottom: 18px; font-size: 0.88rem; }
   .hub-grid, .units-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
   }
   .hub-card, .unit-card {
     position: relative;
     background: var(--bg);
     border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 16px 14px;
+    border-radius: 14px;
+    padding: 18px 18px 16px;
     text-align: left;
     cursor: pointer;
     color: var(--text);
-    min-height: 110px;
+    min-height: 160px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     font-family: inherit;
+    appearance: none;
+    width: 100%;
+    font: inherit;
   }
   .hub-card:hover, .unit-card:hover { border-color: var(--accent); }
   .hub-card.is-placeholder, .unit-card.is-placeholder { border-style: dashed; color: var(--text-muted); }
@@ -292,6 +296,90 @@
     padding: 2px 8px; border-radius: 999px;
   }
   .hub-card.is-ready .hub-tag { color: var(--accent-dark); border-color: var(--accent); }
+  .overview-dashboard {
+    display: grid;
+    gap: 18px;
+  }
+  .overview-hero {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 20px;
+    box-shadow: 0 10px 22px rgba(20, 35, 32, 0.04);
+  }
+  .overview-kicker {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .overview-hero .hero-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .overview-hero h2 {
+    margin: 0;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+  }
+  .overview-hero p {
+    color: var(--text-muted);
+    margin: 8px 0 0;
+    line-height: 1.5;
+  }
+  .overview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .overview-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .overview-stat .value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .overview-stat .label {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+  .dashboard-card-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+  }
+  .mini-action-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mini-action-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent-dark);
+  }
+  .hub-card .hub-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+  .hub-card .hub-actions .mini-action-btn {
+    width: auto;
+  }
   .back-row { display: flex; justify-content: flex-start; margin-bottom: 16px; }
 
   /* ---------- Unit detail (empty slot for a Google Slides embed) ---------- */
@@ -372,10 +460,11 @@
   .placeholder-card p { color: var(--text-muted); max-width: 380px; margin: 0 auto 20px; }
 
     /* ---------- Local account and progress dashboard ---------- */
-    .auth-card { max-width: 420px; margin: 12vh auto 0; }
+    .auth-card { max-width: 420px; margin: 12vh auto 0; position: relative; z-index: 1; pointer-events: auto; }
     .auth-card h1 { margin-bottom: 8px; }
     .auth-card p { color: var(--text-muted); line-height: 1.45; font-size: 0.9rem; }
     .auth-form { display: grid; gap: 12px; margin-top: 20px; }
+    .auth-form input, .auth-form button { position: relative; z-index: 2; }
     .auth-form input {
       width: 100%; padding: 12px 13px; border: 1px solid var(--border);
       border-radius: 9px; background: var(--bg); color: var(--text); font: inherit;
@@ -427,39 +516,57 @@
   <!-- HUB SCREEN -->
   <div id="hubScreen" class="hidden">
     <div class="user-bar"><div class="user-name">Signed in as <strong id="hubUserName"></strong></div><button class="btn small secondary" id="logoutBtn">Log out</button></div>
-    <div class="hub-title">Pick a study tool</div>
-    <div class="hub-subtitle">Tap a card to jump in</div>
-    <div class="hub-grid">
-      <button class="hub-card is-ready" id="hubMapQuiz">
-        <div class="hub-tag">Ready</div>
-        <div><div class="hub-name">Map Quizzes</div></div>
-        <div class="hub-desc">Used to help memorize the location of countries and land marks.</div>
-      </button>
-      <button class="hub-card" id="hubKeyTerms">
-        <div class="hub-tag">Units 1-7</div>
-        <div><div class="hub-name">Key Terms</div></div>
-        <div class="hub-desc">Key terms and definitions for important vocabulary.</div>
-      </button>
-      <button class="hub-card is-ready" id="hubProgress">
-        <div class="hub-tag">Your data</div>
-        <div><div class="hub-name">My Progress</div></div>
-        <div class="hub-desc">See map and vocabulary statistics, then practice your 20 most-missed questions.</div>
-      </button>
-      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
-        <div class="hub-name">Placeholder</div>
-      </button>
-      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
-        <div class="hub-name">Placeholder</div>
-      </button>
-      <button class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
-        <div class="hub-name">Placeholder</div>
-      </button>
+    <div class="overview-dashboard">
+      <div class="overview-hero">
+        <div class="overview-kicker">Home dashboard</div>
+        <div class="hero-row">
+          <div>
+            <h2 id="overviewTitle">Continue Studying</h2>
+            <p id="overviewSubtitle">Resume: Unit 1 Key Terms</p>
+          </div>
+          <button class="mini-action-btn" id="overviewPrimaryAction" type="button">Resume</button>
+        </div>
+      </div>
+
+      <div class="overview-stats" id="overviewStats"></div>
+
+      <div class="hub-grid">
+        <button class="hub-card is-ready" id="hubMapQuiz" type="button">
+          <div class="hub-tag">Ready</div>
+          <div><div class="hub-name">Map Quizzes</div></div>
+          <div class="hub-desc">Used to help memorize the location of countries and land marks.</div>
+          <div class="hub-actions"><span class="mini-action-btn secondary" data-target="quiz">Start Quick Quiz</span></div>
+        </button>
+        <div class="hub-card" id="hubKeyTerms">
+          <div class="hub-tag">Units 1-7</div>
+          <div><div class="hub-name">Key Terms</div></div>
+          <div class="hub-desc">Key terms and definitions for important vocabulary.</div>
+          <div class="hub-actions"><button class="mini-action-btn secondary" type="button" data-target="keyTermsFolder">Open Folder</button></div>
+        </div>
+        <div class="hub-card is-ready" id="hubProgress">
+          <div class="hub-tag">Your data</div>
+          <div><div class="hub-name">My Progress</div></div>
+          <div class="hub-desc">See map and vocabulary statistics, then practice your 20 most-missed questions.</div>
+          <div class="hub-actions"><button class="mini-action-btn secondary" type="button" data-target="progress">View Details</button></div>
+        </div>
+        <div class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+          <div class="hub-name">Placeholder</div>
+        </div>
+        <div class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+          <div class="hub-name">Placeholder</div>
+        </div>
+        <div class="hub-card is-placeholder hub-placeholder-btn" data-title="Placeholder">
+          <div class="hub-name">Placeholder</div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- KEY TERMS: FOLDER SCREEN (Key Terms vs Vocab Quizzes) -->
   <div id="keyTermsFolderScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="keyTermsFolderBackBtn">Back to menu</button></div>
+    <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+      <button class="btn small secondary" id="keyTermsFolderMenuBtn" type="button">Main menu</button>
+    </div>
     <div class="hub-title">Key Terms</div>
     <div class="hub-subtitle">Pick a folder</div>
     <div class="hub-grid">
@@ -478,7 +585,6 @@
 
   <!-- KEY TERMS: UNITS SCREEN -->
   <div id="unitsScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="unitsBackBtn">Back to folders</button></div>
     <div class="hub-title">Key Terms</div>
     <div class="hub-subtitle">Pick a unit</div>
     <div class="units-grid" id="unitsGrid"></div>
@@ -486,7 +592,9 @@
 
   <!-- VOCAB QUIZZES: UNITS SCREEN -->
   <div id="quizUnitsScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="quizUnitsBackBtn">Back to folders</button></div>
+    <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+      <button class="btn small secondary" id="quizUnitsMenuBtn" type="button">Main menu</button>
+    </div>
     <div class="hub-title">Vocab Quizzes</div>
     <div class="hub-subtitle">Pick a unit</div>
     <div class="units-grid" id="quizUnitsGrid"></div>
@@ -494,7 +602,9 @@
 
   <!-- VOCAB QUIZZES: UNIT DETAIL SCREEN -->
   <div id="quizUnitDetailScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="quizUnitDetailBackBtn">Back to units</button></div>
+    <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+      <button class="btn small secondary" id="quizUnitDetailMenuBtn" type="button">Main menu</button>
+    </div>
     <div class="hub-title" id="quizUnitDetailTitle">Unit 1</div>
     <div id="quizPlaceholder" class="slide-slot hidden">Vocab quiz not added yet, check back later.</div>
     <div id="quizWrap" class="hidden">
@@ -521,7 +631,9 @@
 
   <!-- KEY TERMS: UNIT DETAIL SCREEN -->
   <div id="unitDetailScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="unitDetailBackBtn">Back to units</button></div>
+    <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+      <button class="btn small secondary" id="unitDetailMenuBtn" type="button">Main menu</button>
+    </div>
     <div class="hub-title" id="unitDetailTitle">Unit 1</div>
     <div id="slidePlaceholder" class="slide-slot hidden">Slideshow not added yet, a Google Slides embed for this unit will go here.</div>
     <div id="slideshowWrap" class="hidden">
@@ -543,13 +655,14 @@
   <div id="placeholderScreen" class="card hidden placeholder-card">
     <h2 id="phTitle">Placeholder</h2>
     <p>Nothing here yet, check back later.</p>
-    <button class="btn secondary" id="phBackBtn">Back to menu</button>
   </div>
 
   <!-- PROGRESS SCREEN -->
   <div id="progressScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="progressBackBtn">Back to menu</button></div>
     <div class="card">
+      <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+        <button class="btn small secondary" id="progressMenuBtn" type="button">Main menu</button>
+      </div>
       <div class="hub-title">My Progress</div>
       <div class="hub-subtitle">Your results are saved on this device(only this device for now) for this username.</div>
       <div class="stat-grid" id="progressStats"></div>
@@ -560,8 +673,10 @@
 
   <!-- PERSONALIZED REVIEW SCREEN -->
   <div id="reviewScreen" class="hidden">
-    <div class="back-row"><button class="btn small secondary" id="reviewBackBtn">Back to progress</button></div>
     <div class="card">
+      <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+        <button class="btn small secondary" id="reviewMenuBtn" type="button">Main menu</button>
+      </div>
       <div class="quiz-progress-row"><div id="reviewCounter"></div><div id="reviewScore"></div></div>
       <div class="quiz-term-card" id="reviewPrompt"></div>
       <div class="quiz-choices" id="reviewChoices"></div>
@@ -572,8 +687,8 @@
 
   <!-- QUIZ APP -->
   <div id="quizApp" class="hidden">
-  <div class="row" style="margin-bottom:12px;">
-    <button class="btn small secondary" id="backToHubBtn">Back to menu</button>
+  <div class="row" style="margin-bottom:12px; justify-content:flex-end;">
+    <button class="btn small secondary" id="quizMenuBtn" type="button">Main menu</button>
   </div>
   <h1 id="mainTitle">World Geography Map Quiz</h1>
   <div class="subtitle" id="mainSubtitle">Choose a topic below, pick your categories, and start quizzing.</div>
@@ -920,7 +1035,7 @@
       " L " + (p.x + size).toFixed(1) + "," + (p.y + h / 2).toFixed(1) + " Z";
   }
 
-  var STATE = {
+  window.STATE = window.STATE || {
     packId: "general",
     selectedCats: {},
     quizItems: [],
@@ -929,6 +1044,25 @@
     missed: [],
     currentCorrect: null,
     answered: false
+  };
+  var STATE = window.STATE;
+
+  window.saveMapResume = function() {
+    if (!window.studyUser) return;
+    try {
+      var data = JSON.parse(localStorage.getItem("study_user_" + window.studyUser) || '{"answers":{}}');
+      data.resume = {
+        type: "map",
+        packId: STATE.packId,
+        selectedCats: STATE.selectedCats,
+        quizItems: STATE.quizItems,
+        currentIndex: STATE.currentIndex,
+        score: STATE.score,
+        missed: STATE.missed,
+        currentCorrect: STATE.currentCorrect
+      };
+      localStorage.setItem("study_user_" + window.studyUser, JSON.stringify(data));
+    } catch (e) { /* storage unavailable, keep the quiz usable */ }
   };
 
   window.recordStudyAnswer = function(type, question, correct, category, choices) {
@@ -1021,12 +1155,15 @@
     STATE.currentIndex = 0;
     STATE.score = 0;
     STATE.missed = [];
+    STATE.currentCorrect = null;
+    STATE.answered = false;
     document.getElementById("mainTitle").textContent = pack.label;
     document.getElementById("mainSubtitle").textContent = pack.subtitle;
     document.getElementById("setupScreen").classList.add("hidden");
     document.getElementById("resultsScreen").classList.add("hidden");
     document.getElementById("quizScreen").classList.remove("hidden");
-    renderQuestion();
+    window.saveMapResume();
+    renderMapQuestion();
   };
 
   document.getElementById("restartBtn").onclick = function() {
@@ -1042,9 +1179,11 @@
   document.getElementById("nextBtn").onclick = function() {
     STATE.currentIndex++;
     if (STATE.currentIndex >= STATE.quizItems.length) {
-      showResults();
+      window.saveMapResume();
+      showMapResults();
     } else {
-      renderQuestion();
+      window.saveMapResume();
+      renderMapQuestion();
     }
   };
 
@@ -1203,15 +1342,17 @@
   }
 
   // ---------- Question rendering ----------
-  function renderQuestion() {
+  function renderMapQuestion() {
     STATE.answered = false;
     var pack = currentPack();
     var item = STATE.quizItems[STATE.currentIndex];
+    if (!item) return;
     document.getElementById("qCounter").textContent =
       "Question " + (STATE.currentIndex + 1) + " of " + STATE.quizItems.length;
     document.getElementById("qScore").textContent = "Score: " + STATE.score;
     document.getElementById("progressFill").style.width =
       Math.round((STATE.currentIndex / STATE.quizItems.length) * 100) + "%";
+    window.saveMapResume();
 
     var svg = document.getElementById("mapSvg");
     buildBaseMap(svg, pack);
@@ -1237,12 +1378,12 @@
       var btn = document.createElement("button");
       btn.className = "opt-btn";
       btn.textContent = optName;
-      btn.onclick = function() { handleAnswer(optName, btn); };
+      btn.onclick = function() { handleMapAnswer(optName, btn); };
       grid.appendChild(btn);
     });
   }
 
-  function handleAnswer(chosen, btnEl) {
+  function handleMapAnswer(chosen, btnEl) {
     if (STATE.answered) return;
     STATE.answered = true;
     var correct = chosen === STATE.currentCorrect;
@@ -1266,9 +1407,10 @@
       if (b.textContent === STATE.currentCorrect) b.classList.add("correct");
     });
     document.getElementById("nextBtn").classList.remove("hidden");
+    window.saveMapResume();
   }
 
-  function showResults() {
+  function showMapResults() {
     document.getElementById("quizScreen").classList.add("hidden");
     document.getElementById("resultsScreen").classList.remove("hidden");
     var total = STATE.quizItems.length;
@@ -1368,11 +1510,142 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     quiz: document.getElementById("quizApp")
   };
 
+  function renderOverviewDashboard() {
+    var statWrap = document.getElementById("overviewStats");
+    if (!statWrap) return;
+
+    var answers = Object.keys(getProgress().answers || {}).map(function(key) { return getProgress().answers[key]; });
+    var total = answers.reduce(function(sum, item) { return sum + item.correct + item.wrong; }, 0);
+    var correct = answers.reduce(function(sum, item) { return sum + item.correct; }, 0);
+    var missed = answers.filter(function(item) { return item.wrong > 0; }).sort(function(a, b) { return b.wrong - a.wrong || (a.question || "").localeCompare(b.question || ""); });
+    var pct = total ? Math.round(correct / total * 100) : 0;
+
+    statWrap.innerHTML = [
+      { value: pct + '%', label: 'Overall Accuracy' },
+      { value: total, label: 'Questions Answered' },
+      { value: missed.length, label: 'Questions to Revisit' }
+    ].map(function(item) {
+      return '<div class="overview-stat"><span class="value">' + item.value + '</span><span class="label">' + item.label + '</span></div>';
+    }).join('');
+
+    var recent = answers.slice().sort(function(a, b) { return (b.lastSeen || 0) - (a.lastSeen || 0); })[0];
+    var savedResume = loadResumeState();
+    var hasLoggedStudy = !!(savedResume && ((savedResume.type === 'map' && Array.isArray(savedResume.quizItems) && savedResume.quizItems.length) || (savedResume.type === 'keyterms' && (typeof savedResume.slideIndex === 'number' || typeof savedResume.unitNum === 'number')))) || !!recent;
+    var hero = document.querySelector(".overview-hero");
+    var subtitle = document.getElementById("overviewSubtitle");
+    var primaryButton = document.getElementById("overviewPrimaryAction");
+    if (hero) hero.classList.toggle("hidden", !hasLoggedStudy);
+    if (!hasLoggedStudy) {
+      if (subtitle) subtitle.textContent = "";
+      if (primaryButton) { primaryButton.textContent = ""; primaryButton.classList.add("hidden"); }
+      return;
+    }
+
+    var resumableType = savedResume && savedResume.type ? savedResume.type : (recent && recent.type ? recent.type : 'keyterms');
+    var activityLabel = resumableType === 'map' ? 'Resume: Map Quiz' : 'Resume: Unit 1 Key Terms';
+    if (subtitle) subtitle.textContent = activityLabel;
+    if (primaryButton) {
+      primaryButton.classList.remove("hidden");
+      primaryButton.textContent = resumableType === 'map' ? 'Resume Quiz' : 'Resume';
+      primaryButton.dataset.target = resumableType === 'map' ? 'quiz' : 'keyTermsFolder';
+    }
+  }
+
+  function saveResumeState(state) {
+    if (!window.studyUser) return;
+    try {
+      var data = getProgress();
+      data.resume = state;
+      localStorage.setItem("study_user_" + window.studyUser, JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  function loadResumeState() {
+    try {
+      return (getProgress().resume || null);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  var STATE = window.STATE || {
+    packId: "general",
+    selectedCats: {},
+    quizItems: [],
+    currentIndex: 0,
+    score: 0,
+    missed: [],
+    currentCorrect: null,
+    answered: false
+  };
+  window.STATE = STATE;
+
+  function resumeLastStudy() {
+    var resume = loadResumeState();
+    if (!resume) {
+      showScreen("keyTermsFolder");
+      return;
+    }
+
+    if (resume.type === "map") {
+      if (resume.quizItems && resume.quizItems.length) {
+        STATE.packId = resume.packId || STATE.packId;
+        STATE.selectedCats = resume.selectedCats || STATE.selectedCats;
+        STATE.quizItems = resume.quizItems;
+        STATE.currentIndex = Math.min(Math.max(Number(resume.currentIndex || 0), 0), Math.max(STATE.quizItems.length - 1, 0));
+        STATE.score = Number(resume.score || 0);
+        STATE.missed = Array.isArray(resume.missed) ? resume.missed : [];
+        STATE.currentCorrect = resume.currentCorrect || null;
+        document.getElementById("mainTitle").textContent = currentPack().label;
+        document.getElementById("mainSubtitle").textContent = currentPack().subtitle;
+      }
+      document.getElementById("setupScreen").classList.add("hidden");
+      document.getElementById("resultsScreen").classList.add("hidden");
+      document.getElementById("quizScreen").classList.remove("hidden");
+      renderMapQuestion();
+      showScreen("quiz");
+      return;
+    }
+
+    if (resume.type === "keyterms") {
+      var unitNum = Number(resume.unitNum || 1);
+      var savedIndex = Number(resume.slideIndex || 0);
+      document.getElementById("unitDetailTitle").textContent = "Unit " + unitNum;
+      openUnitDetail(unitNum, savedIndex);
+      showScreen("unitDetail");
+      return;
+    }
+
+    showScreen("keyTermsFolder");
+  }
+
   function showScreen(name) {
     Object.keys(screens).forEach(function(key) {
       if (screens[key]) screens[key].classList.toggle("hidden", key !== name);
     });
+    if (name === "hub") renderOverviewDashboard();
+    if (name === "auth") {
+      setTimeout(function() {
+        var username = document.getElementById("usernameInput");
+        if (username) username.focus();
+      }, 0);
+    }
     window.scrollTo(0, 0);
+  }
+
+  function openMapQuiz() {
+    STATE.quizItems = [];
+    STATE.currentIndex = 0;
+    STATE.score = 0;
+    STATE.missed = [];
+    STATE.currentCorrect = null;
+    STATE.answered = false;
+    document.getElementById("setupScreen").classList.remove("hidden");
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultsScreen").classList.add("hidden");
+    document.getElementById("mainTitle").textContent = "World Geography Map Quiz";
+    document.getElementById("mainSubtitle").textContent = "Choose a topic below, pick your categories, and start quizzing.";
+    showScreen("quiz");
   }
 
   var authMode = "login";
@@ -1416,6 +1689,25 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   function getProgress() {
     try { return JSON.parse(localStorage.getItem("study_user_" + window.studyUser) || '{"answers":{}}'); }
     catch (e) { return { answers: {} }; }
+  }
+  function saveMapResume() {
+    saveResumeState({
+      type: "map",
+      packId: STATE.packId,
+      selectedCats: STATE.selectedCats,
+      quizItems: STATE.quizItems,
+      currentIndex: STATE.currentIndex,
+      score: STATE.score,
+      missed: STATE.missed,
+      currentCorrect: STATE.currentCorrect
+    });
+  }
+  function saveSlideResume(unitNum, index) {
+    saveResumeState({
+      type: "keyterms",
+      unitNum: unitNum,
+      slideIndex: index
+    });
   }
   function renderProgress() {
     var answers = Object.keys(getProgress().answers || {}).map(function(key) { return getProgress().answers[key]; });
@@ -1473,19 +1765,44 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var enterBtn = document.getElementById("enterBtn");
   if (enterBtn) enterBtn.addEventListener("click", function() { showScreen("hub"); });
 
+  function goToMainMenu() { showScreen("hub"); }
+
+  if (document.getElementById("quizMenuBtn")) document.getElementById("quizMenuBtn").addEventListener("click", goToMainMenu);
+  if (document.getElementById("quizUnitsMenuBtn")) document.getElementById("quizUnitsMenuBtn").addEventListener("click", goToMainMenu);
+  if (document.getElementById("quizUnitDetailMenuBtn")) document.getElementById("quizUnitDetailMenuBtn").addEventListener("click", goToMainMenu);
+  if (document.getElementById("unitDetailMenuBtn")) document.getElementById("unitDetailMenuBtn").addEventListener("click", goToMainMenu);
+  if (document.getElementById("progressMenuBtn")) document.getElementById("progressMenuBtn").addEventListener("click", goToMainMenu);
+  if (document.getElementById("reviewMenuBtn")) document.getElementById("reviewMenuBtn").addEventListener("click", goToMainMenu);
+
+  document.getElementById("overviewPrimaryAction").addEventListener("click", function() {
+    resumeLastStudy();
+  });
+
   var hubMapQuiz = document.getElementById("hubMapQuiz");
-  if (hubMapQuiz) hubMapQuiz.addEventListener("click", function() { showScreen("quiz"); });
+  if (hubMapQuiz) hubMapQuiz.addEventListener("click", function() { openMapQuiz(); });
+  var hubKeyTerms = document.getElementById("hubKeyTerms");
+  if (hubKeyTerms) hubKeyTerms.addEventListener("click", function() { showScreen("keyTermsFolder"); });
   document.getElementById("hubProgress").addEventListener("click", function() { renderProgress(); showScreen("progress"); });
-  document.getElementById("progressBackBtn").addEventListener("click", function() { showScreen("hub"); });
-  document.getElementById("reviewBackBtn").addEventListener("click", function() { renderProgress(); showScreen("progress"); });
+  if (document.getElementById("keyTermsFolderMenuBtn")) {
+    document.getElementById("keyTermsFolderMenuBtn").addEventListener("click", function() { showScreen("hub"); });
+  }
   document.getElementById("reviewBtn").addEventListener("click", startReview);
   document.getElementById("logoutBtn").addEventListener("click", function() { window.studyUser = null; setAuthMode("login"); showScreen("auth"); });
 
-  var backToHubBtn = document.getElementById("backToHubBtn");
-  if (backToHubBtn) backToHubBtn.addEventListener("click", function() { showScreen("hub"); });
-
-  var phBackBtn = document.getElementById("phBackBtn");
-  if (phBackBtn) phBackBtn.addEventListener("click", function() { showScreen("hub"); });
+  document.querySelectorAll(".mini-action-btn[data-target]").forEach(function(button) {
+    button.addEventListener("click", function(event) {
+      event.stopPropagation();
+      var target = button.dataset.target;
+      if (target === "quiz") {
+        openMapQuiz();
+      } else if (target === "keyTermsFolder") {
+        showScreen("keyTermsFolder");
+      } else if (target === "progress") {
+        renderProgress();
+        showScreen("progress");
+      }
+    });
+  });
 
   var phTitle = document.getElementById("phTitle");
   Array.prototype.forEach.call(document.querySelectorAll(".hub-placeholder-btn"), function(btn) {
@@ -1518,20 +1835,20 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var slideIndex = 0;
   var slideInitDone = false;
 
-  function openUnitDetail(unitNum) {
+  function openUnitDetail(unitNum, savedIndex) {
     var ph = document.getElementById("slidePlaceholder");
     var wrap = document.getElementById("slideshowWrap");
     if (unitNum === 1 && typeof UNIT1_TERMS !== "undefined" && UNIT1_TERMS.length > 0) {
       ph.classList.add("hidden");
       wrap.classList.remove("hidden");
-      initSlideshow();
+      initSlideshow(typeof savedIndex === "number" ? savedIndex : 0);
     } else {
       wrap.classList.add("hidden");
       ph.classList.remove("hidden");
     }
   }
 
-  function initSlideshow() {
+  function initSlideshow(startIndex) {
     if (!slideInitDone) {
       var jump = document.getElementById("slideJump");
       UNIT1_TERMS.forEach(function(t, i) {
@@ -1566,17 +1883,19 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
       });
       slideInitDone = true;
     }
-    slideIndex = 0;
+    slideIndex = typeof startIndex === "number" ? startIndex : 0;
     renderSlide();
   }
 
   function renderSlide() {
+    if (!UNIT1_TERMS || !UNIT1_TERMS[slideIndex]) return;
     var t = UNIT1_TERMS[slideIndex];
     var img = document.getElementById("slideImg");
     img.src = t.img;
     img.alt = t.name + " key term card";
     document.getElementById("slideCounter").textContent = (slideIndex + 1) + " / " + UNIT1_TERMS.length;
     document.getElementById("slideJump").value = String(slideIndex);
+    saveSlideResume(1, slideIndex);
   }
 
   // ---------- Vocab Quizzes: Units 1-7 ----------
@@ -1628,6 +1947,10 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   }
 
   function startQuiz() {
+    if (!Array.isArray(UNIT1_QUIZ) || !UNIT1_QUIZ.length) {
+      showScreen("hub");
+      return;
+    }
     quizQuestions = shuffleArray(UNIT1_QUIZ);
     quizPos = 0;
     quizScoreCount = 0;
@@ -1638,6 +1961,11 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
 
   function renderQuestion() {
     var q = quizQuestions[quizPos];
+    if (!q) {
+      document.getElementById("quizWrap").classList.add("hidden");
+      document.getElementById("quizResult").classList.remove("hidden");
+      return;
+    }
     document.getElementById("quizProgress").textContent = "Question " + (quizPos + 1) + " / " + quizQuestions.length;
     document.getElementById("quizScore").textContent = "Score: " + quizScoreCount;
     document.getElementById("quizTermCard").textContent = q.term;
@@ -1696,29 +2024,18 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
   var hubKeyTerms = document.getElementById("hubKeyTerms");
   if (hubKeyTerms) hubKeyTerms.addEventListener("click", function() { showScreen("keyTermsFolder"); });
 
-  var keyTermsFolderBackBtn = document.getElementById("keyTermsFolderBackBtn");
-  if (keyTermsFolderBackBtn) keyTermsFolderBackBtn.addEventListener("click", function() { showScreen("hub"); });
-
   var folderKeyTerms = document.getElementById("folderKeyTerms");
   if (folderKeyTerms) folderKeyTerms.addEventListener("click", function() { showScreen("units"); });
 
   var folderVocabQuiz = document.getElementById("folderVocabQuiz");
   if (folderVocabQuiz) folderVocabQuiz.addEventListener("click", function() { showScreen("quizUnits"); });
 
-  var unitsBackBtn = document.getElementById("unitsBackBtn");
-  if (unitsBackBtn) unitsBackBtn.addEventListener("click", function() { showScreen("keyTermsFolder"); });
-
-  var unitDetailBackBtn = document.getElementById("unitDetailBackBtn");
-  if (unitDetailBackBtn) unitDetailBackBtn.addEventListener("click", function() { showScreen("units"); });
-
-  var quizUnitsBackBtn = document.getElementById("quizUnitsBackBtn");
-  if (quizUnitsBackBtn) quizUnitsBackBtn.addEventListener("click", function() { showScreen("keyTermsFolder"); });
-
-  var quizUnitDetailBackBtn = document.getElementById("quizUnitDetailBackBtn");
-  if (quizUnitDetailBackBtn) quizUnitDetailBackBtn.addEventListener("click", function() { showScreen("quizUnits"); });
-
   // Every visit starts at login; quiz history remains attached to the chosen username.
   showScreen("auth");
+  setTimeout(function() {
+    var username = document.getElementById("usernameInput");
+    if (username) username.focus();
+  }, 50);
 })();
 </script>
 </body>
