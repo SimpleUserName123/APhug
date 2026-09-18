@@ -1604,13 +1604,13 @@ var UNIT1_TERMS = [{"name": "Absolute Location", "img": "data:image/jpeg;base64,
     return hex;
   }
   async function websiteRestRequest(path, options) {
-    var response = await fetch(window.SUPABASE_URL + "/rest/v1/" + path, Object.assign({
-      headers: {
-        apikey: window.SUPABASE_ANON_KEY,
-        Authorization: "Bearer " + window.SUPABASE_ANON_KEY,
-        "Content-Type": "application/json"
-      }
-    }, options || {}));
+    var requestOptions = Object.assign({}, options || {});
+    requestOptions.headers = Object.assign({
+      apikey: window.SUPABASE_ANON_KEY,
+      Authorization: "Bearer " + window.SUPABASE_ANON_KEY,
+      "Content-Type": "application/json"
+    }, (options && options.headers) || {});
+    var response = await fetch(window.SUPABASE_URL + "/rest/v1/" + path, requestOptions);
     var body = await response.text();
     var data = body ? JSON.parse(body) : null;
     if (!response.ok) {
